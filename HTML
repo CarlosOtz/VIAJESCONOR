@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>Calculadora de Viajes</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <style>
+    :root{
+      --bg:#0b1220; --card:#111a2e; --muted:#9fb0d9; --text:#e8eefc;
+      --accent:#3b82f6; --danger:#ef4444; --ok:#22c55e; --line:#1f2a44;
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+      background:linear-gradient(180deg,#0b1220,#070b14);
+      color:var(--text);
+    }
+    header{
+      padding:18px 16px 10px;
+      position:sticky; top:0; backdrop-filter: blur(8px);
+      background:rgba(11,18,32,.78); border-bottom:1px solid rgba(31,42,68,.7);
+      z-index:10;
+    }
+    h1{margin:0; font-size:18px; letter-spacing:.2px}
+    .sub{margin-top:6px; color:var(--muted); font-size:12px}
+    main{padding:14px 16px 40px; max-width:980px; margin:0 auto}
+    .grid{display:grid; gap:12px}
+    @media(min-width:900px){ .grid{grid-template-columns: 1.1fr .9fr} }
+    .card{
+      background:rgba(17,26,46,.86);
+      border:1px solid rgba(31,42,68,.9);
+      border-radius:var(--radius);
+      padding:14px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.25);
+    }
+    .card h2{margin:0 0 10px; font-size:15px}
+    label{display:block; font-size:12px; color:var(--muted); margin:10px 0 6px}
+    input, select, textarea{
+      width:100%;
+      background:#0c1427;
+      color:var(--text);
+      border:1px solid rgba(31,42,68,.9);
+      border-radius:12px;
+      padding:10px 11px;
+      outline:none;
+    }
+    textarea{min-height:70px; resize:vertical}
+    .row{display:grid; gap:10px}
+    @media(min-width:560px){ .row{grid-template-columns:1fr 1fr} }
+    .row3{display:grid; gap:10px}
+    @media(min-width:760px){ .row3{grid-template-columns:1fr 1fr 1fr} }
+
+    .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    button{
+      border:0; padding:10px 12px; border-radius:12px; cursor:pointer;
+      font-weight:600;
+    }
+    .primary{background:var(--accent); color:white}
+    .ghost{background:transparent; color:var(--text); border:1px solid rgba(31,42,68,.9)}
+    .danger{background:rgba(239,68,68,.18); color:#fecaca; border:1px solid rgba(239,68,68,.35)}
+    .small{font-size:12px; padding:8px 10px}
+
+    table{width:100%; border-collapse:separate; border-spacing:0; margin-top:10px}
+    th,td{padding:9px 10px; border-bottom:1px solid rgba(31,42,68,.9); font-size:13px}
+    th{color:var(--muted); text-align:left; font-weight:600}
+    .mono{font-variant-numeric: tabular-nums}
+    .right{text-align:right}
+    .muted{color:var(--muted)}
+    .pill{
+      display:inline-block; font-size:12px; padding:4px 8px; border-radius:999px;
+      border:1px solid rgba(31,42,68,.9); color:var(--muted);
+      background:rgba(12,20,39,.7);
+    }
+    .kpi{display:grid; gap:10px}
+    @media(min-width:560px){ .kpi{grid-template-columns:1fr 1fr} }
+    .kpi .box{
+      border-radius:14px;
+      border:1px solid rgba(31,42,68,.9);
+      background:rgba(12,20,39,.65);
+      padding:12px;
+    }
+    .kpi .val{font-size:18px; font-weight:800; margin-top:6px}
+    .ok{color:var(--ok)}
+    .bad{color:#fca5a5}
+    .hint{font-size:12px; color:var(--muted); margin-top:8px}
+    .footerActions{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between}
+    .status{font-size:12px; color:var(--muted)}
+    .nowrap{white-space:nowrap}
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>Calculadora de Viajes</h1>
+  <div class="sub">Offline • Guarda en el dispositivo • Lista para GitHub Pages</div>
+</header>
+
+<main class="grid">
+
+  <!-- CAPTURA -->
+  <section class="card">
+    <h2>Nuevo viaje</h2>
+
+    <div class="row3">
+      <div>
+        <label>Unidad</label>
+        <input id="unidad" placeholder="Ej. 114" inputmode="numeric" />
+      </div>
+      <div>
+        <label>Origen</label>
+        <input id="origen" placeholder="Ej. Apodaca" />
+      </div>
+      <div>
+        <label>Destino</label>
+        <input id="destino" placeholder="Ej. Querétaro" />
+      </div>
+    </div>
+
+    <div class="row3">
+      <div>
+        <label>Ingreso (lo que te pagan)</label>
+        <input id="ingreso" placeholder="0.00" inputmode="decimal" />
+      </div>
+      <div>
+        <label>Fecha</label>
+        <input id="fecha" type="date" />
+      </div>
+      <div>
+        <label>Hora</label>
+        <input id="hora" type="time" />
+      </div>
+    </div>
+
+    <label>Notas</label>
+    <textarea id="notas" placeholder="Opcional..."></textarea>
+
+    <hr style="border:0;border-top:1px solid rgba(31,42,68,.9); margin:14px 0;">
+
+    <h2>Cargas de diésel (múltiples)</h2>
+
+    <div class="row3">
+      <div>
+        <label>Monto de carga</label>
+        <input id="dieselMonto" placeholder="0.00" inputmode="decimal" />
+      </div>
+      <div>
+        <label>Fecha</label>
+        <input id="dieselFecha" type="date" />
+      </div>
+      <div>
+        <label>Hora</label>
+        <input id="dieselHora" type="time" />
+      </div>
+    </div>
+
+    <div class="btns">
+      <button class="primary" id="btnAddDiesel">Agregar carga</button>
+      <button class="ghost" id="btnClearDiesel">Limpiar campos</button>
+    </div>
+
+    <table id="tablaDiesel">
+      <thead>
+        <tr>
+          <th>Fecha/Hora</th>
+          <th class="right">Monto</th>
+          <th class="right">Acción</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <hr style="border:0;border-top:1px solid rgba(31,42,68,.9); margin:14px 0;">
+
+    <h2>Otros costos</h2>
+    <div class="row3">
+      <div>
+        <label>Casetas</label>
+        <input id="casetas" placeholder="0.00" inputmode="decimal" />
+      </div>
+      <div>
+        <label>Comisión operador</label>
+        <input id="operador" placeholder="0.00" inputmode="decimal" />
+      </div>
+      <div>
+        <label>Otros</label>
+        <input id="otros" placeholder="0.00" inputmode="decimal" />
+      </div>
+    </div>
+
+    <div class="btns">
+      <button class="primary" id="btnGuardar">Guardar viaje</button>
+      <button class="ghost" id="btnNuevo">Nuevo (limpiar)</button>
+    </div>
+
+    <div class="hint">Tip: puedes capturar varias cargas de diésel por viaje (mañana/tarde/día siguiente).</div>
+  </section>
+
+  <!-- RESUMEN + HISTORIAL -->
+  <aside class="card">
+    <div class="footerActions">
+      <h2 style="margin:0">Resumen</h2>
+      <span class="pill" id="offlinePill">Offline listo</span>
+    </div>
+
+    <div class="kpi" style="margin-top:10px">
+      <div class="box">
+        <div class="muted">Total costos</div>
+        <div class="val mono" id="kpiCostos">$0.00</div>
+      </div>
+      <div class="box">
+        <div class="muted">Ganancia</div>
+        <div class="val mono" id="kpiGanancia">$0.00</div>
+      </div>
+      <div class="box">
+        <div class="muted">% Ganancia</div>
+        <div class="val mono" id="kpiPorcentaje">0%</div>
+      </div>
+      <div class="box">
+        <div class="muted">Diésel total</div>
+        <div class="val mono" id="kpiDiesel">$0.00</div>
+      </div>
+    </div>
+
+    <div class="btns">
+      <button class="ghost small" id="btnExport">Exportar JSON</button>
+      <button class="ghost small" id="btnImport">Importar JSON</button>
+      <input id="fileImport" type="file" accept="application/json" hidden>
+      <button class="danger small" id="btnBorrarTodo">Borrar todo</button>
+    </div>
+
+    <hr style="border:0;border-top:1px solid rgba(31,42,68,.9); margin:14px 0;">
+
+    <div class="footerActions">
+      <h2 style="margin:0">Historial</h2>
+      <span class="status" id="countViajes">0 viajes</span>
+    </div>
+
+    <label>Filtrar</label>
+    <div class="row">
+      <input id="filtro" placeholder="Unidad / origen / destino" />
+      <select id="orden">
+        <option value="desc">Más recientes</option>
+        <option value="asc">Más antiguos</option>
+      </select>
+    </div>
+
+    <table id="tablaViajes">
+      <thead>
+        <tr>
+          <th>Viaje</th>
+          <th class="right nowrap">Ganancia</th>
+          <th class="right">Acción</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="hint">Se guarda en el dispositivo (localStorage). Para compartir entre varios, se exporta/importa JSON.</div>
+  </aside>
+
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  const STORAGE_KEY = "viajes_v1";
+
+  let dieselList = []; // temporal para el viaje en edición
+  let viajes = loadViajes();
+
+  // defaults de fecha/hora
+  const now = new Date();
+  $("fecha").value = toDateInput(now);
+  $("hora").value = toTimeInput(now);
+  $("dieselFecha").value = toDateInput(now);
+  $("dieselHora").value = toTimeInput(now);
+
+  // Service worker
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  }
+
+  // Eventos
+  $("btnAddDiesel").addEventListener("click", (e) => {
+    e.preventDefault();
+    const monto = toMoney($("dieselMonto").value);
+    const f = $("dieselFecha").value;
+    const h = $("dieselHora").value;
+
+    if (!monto || monto <= 0) return alert("Pon un monto válido para la carga de diésel.");
+    if (!f) return alert("Selecciona fecha de la carga.");
+    if (!h) return alert("Selecciona hora de la carga.");
+
+    dieselList.push({ monto, fecha: f, hora: h, ts: new Date(f+"T"+h).getTime() });
+    dieselList.sort((a,b)=>a.ts-b.ts);
+    renderDieselTable();
+    $("dieselMonto").value = "";
+    $("dieselMonto").focus();
+    updateKPIsPreview();
+  });
+
+  $("btnClearDiesel").addEventListener("click", (e) => {
+    e.preventDefault();
+    $("dieselMonto").value = "";
+    $("dieselFecha").value = toDateInput(new Date());
+    $("dieselHora").value = toTimeInput(new Date());
+  });
+
+  $("casetas").addEventListener("input", updateKPIsPreview);
+  $("operador").addEventListener("input", updateKPIsPreview);
+  $("otros").addEventListener("input", updateKPIsPreview);
+  $("ingreso").addEventListener("input", updateKPIsPreview);
+
+  $("btnGuardar").addEventListener("click", (e) => {
+    e.preventDefault();
+
+    const unidad = $("unidad").value.trim();
+    const origen = $("origen").value.trim();
+    const destino = $("destino").value.trim();
+    const ingreso = toMoney($("ingreso").value);
+    const fecha = $("fecha").value;
+    const hora = $("hora").value;
+    const notas = $("notas").value.trim();
+
+    if (!unidad) return alert("Falta la unidad.");
+    if (!origen) return alert("Falta el origen.");
+    if (!destino) return alert("Falta el destino.");
+    if (!ingreso || ingreso <= 0) return alert("Ingresa un monto de ingreso válido.");
+    if (!fecha) return alert("Selecciona fecha.");
+    if (!hora) return alert("Selecciona hora.");
+
+    const casetas = toMoney($("casetas").value) || 0;
+    const operador = toMoney($("operador").value) || 0;
+    const otros = toMoney($("otros").value) || 0;
+
+    const dieselTotal = sum(dieselList.map(d => d.monto));
+    const costos = dieselTotal + casetas + operador + otros;
+    const ganancia = ingreso - costos;
+    const porcentaje = ingreso > 0 ? (ganancia / ingreso) * 100 : 0;
+
+    const id = cryptoRandomId();
+    const ts = new Date(fecha+"T"+hora).getTime();
+
+    const item = {
+      id, ts,
+      unidad, origen, destino,
+      ingreso,
+      diesel: dieselList.slice(),
+      casetas, operador, otros,
+      costos, ganancia, porcentaje,
+      fecha, hora, notas
+    };
+
+    viajes.push(item);
+    saveViajes(viajes);
+    resetForm();
+    renderViajes();
+    alert("Viaje guardado ✅");
+  });
+
+  $("btnNuevo").addEventListener("click", (e) => {
+    e.preventDefault();
+    resetForm();
+  });
+
+  $("filtro").addEventListener("input", renderViajes);
+  $("orden").addEventListener("change", renderViajes);
+
+  $("btnBorrarTodo").addEventListener("click", () => {
+    if (!confirm("¿Borrar todo el historial?")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    viajes = [];
+    renderViajes();
+    updateKPIsPreview();
+  });
+
+  $("btnExport").addEventListener("click", () => {
+    const data = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), viajes }, null, 2);
+    const blob = new Blob([data], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "viajes_export.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  $("btnImport").addEventListener("click", () => $("fileImport").click());
+
+  $("fileImport").addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try{
+      const text = await file.text();
+      const obj = JSON.parse(text);
+      if (!obj || !Array.isArray(obj.viajes)) throw new Error("Formato inválido.");
+      viajes = obj.viajes;
+      saveViajes(viajes);
+      renderViajes();
+      alert("Importación lista ✅");
+    }catch(err){
+      alert("No se pudo importar: " + err.message);
+    }finally{
+      e.target.value = "";
+    }
+  });
+
+  // Render inicial
+  renderDieselTable();
+  renderViajes();
+  updateKPIsPreview();
+
+  // ===== Helpers =====
+
+  function renderDieselTable(){
+    const tbody = $("tablaDiesel").querySelector("tbody");
+    tbody.innerHTML = "";
+    if (dieselList.length === 0){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td class="muted" colspan="3">Sin cargas registradas.</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+    dieselList.forEach((d, idx) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="mono">${d.fecha} ${d.hora}</td>
+        <td class="right mono">${fmtMoney(d.monto)}</td>
+        <td class="right">
+          <button class="danger small" data-del="${idx}">Quitar</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll("[data-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const i = Number(btn.getAttribute("data-del"));
+        dieselList.splice(i,1);
+        renderDieselTable();
+        updateKPIsPreview();
+      });
+    });
+  }
+
+  function renderViajes(){
+    const tbody = $("tablaViajes").querySelector("tbody");
+    tbody.innerHTML = "";
+
+    const q = $("filtro").value.trim().toLowerCase();
+    const ord = $("orden").value;
+
+    let list = viajes.slice();
+    list.sort((a,b)=> ord==="desc" ? b.ts-a.ts : a.ts-b.ts);
+
+    if (q){
+      list = list.filter(v =>
+        (v.unidad||"").toLowerCase().includes(q) ||
+        (v.origen||"").toLowerCase().includes(q) ||
+        (v.destino||"").toLowerCase().includes(q)
+      );
+    }
+
+    $("countViajes").textContent = `${list.length} viaje${list.length===1?"":"s"}`;
+
+    if (list.length === 0){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td class="muted" colspan="3">No hay viajes aún.</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    list.forEach(v => {
+      const tr = document.createElement("tr");
+      const gClass = v.ganancia >= 0 ? "ok" : "bad";
+      tr.innerHTML = `
+        <td>
+          <div><strong class="mono">${v.unidad}</strong> · <span class="mono">${v.fecha} ${v.hora}</span></div>
+          <div class="muted">${escapeHtml(v.origen)} → ${escapeHtml(v.destino)}</div>
+        </td>
+        <td class="right mono ${gClass}">${fmtMoney(v.ganancia)}</td>
+        <td class="right">
+          <button class="ghost small" data-view="${v.id}">Ver</button>
+          <button class="danger small" data-del="${v.id}">Borrar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll("[data-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-del");
+        if (!confirm("¿Borrar este viaje?")) return;
+        viajes = viajes.filter(v => v.id !== id);
+        saveViajes(viajes);
+        renderViajes();
+      });
+    });
+
+    tbody.querySelectorAll("[data-view]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-view");
+        const v = viajes.find(x => x.id === id);
+        if (!v) return;
+
+        const dieselTotal = sum((v.diesel||[]).map(d=>d.monto));
+        const lines = (v.diesel||[]).map(d => `• ${d.fecha} ${d.hora}  ${fmtMoney(d.monto)}`).join("\n") || "• (sin cargas)";
+
+        alert(
+`Unidad: ${v.unidad}
+Ruta: ${v.origen} → ${v.destino}
+Fecha/Hora: ${v.fecha} ${v.hora}
+
+Ingreso: ${fmtMoney(v.ingreso)}
+
+Diésel (${(v.diesel||[]).length}): ${fmtMoney(dieselTotal)}
+${lines}
+
+Casetas: ${fmtMoney(v.casetas)}
+Operador: ${fmtMoney(v.operador)}
+Otros: ${fmtMoney(v.otros)}
+
+Total costos: ${fmtMoney(v.costos)}
+Ganancia: ${fmtMoney(v.ganancia)}
+% Ganancia: ${v.porcentaje.toFixed(2)}%
+
+Notas: ${v.notas || "(vacío)"}`
+        );
+      });
+    });
+  }
+
+  function updateKPIsPreview(){
+    const ingreso = toMoney($("ingreso").value) || 0;
+    const casetas = toMoney($("casetas").value) || 0;
+    const operador = toMoney($("operador").value) || 0;
+    const otros = toMoney($("otros").value) || 0;
+    const dieselTotal = sum(dieselList.map(d=>d.monto));
+
+    const costos = dieselTotal + casetas + operador + otros;
+    const ganancia = ingreso - costos;
+    const porcentaje = ingreso > 0 ? (ganancia/ingreso)*100 : 0;
+
+    $("kpiDiesel").textContent = fmtMoney(dieselTotal);
+    $("kpiCostos").textContent = fmtMoney(costos);
+    $("kpiGanancia").textContent = fmtMoney(ganancia);
+    $("kpiGanancia").className = "val mono " + (ganancia>=0 ? "ok" : "bad");
+    $("kpiPorcentaje").textContent = `${porcentaje.toFixed(2)}%`;
+    $("kpiPorcentaje").className = "val mono " + (porcentaje>=0 ? "ok" : "bad");
+  }
+
+  function resetForm(){
+    $("unidad").value = "";
+    $("origen").value = "";
+    $("destino").value = "";
+    $("ingreso").value = "";
+    $("notas").value = "";
+    $("casetas").value = "";
+    $("operador").value = "";
+    $("otros").value = "";
+    const n = new Date();
+    $("fecha").value = toDateInput(n);
+    $("hora").value = toTimeInput(n);
+
+    dieselList = [];
+    $("dieselMonto").value = "";
+    $("dieselFecha").value = toDateInput(n);
+    $("dieselHora").value = toTimeInput(n);
+    renderDieselTable();
+    updateKPIsPreview();
+  }
+
+  function loadViajes(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch{ return []; }
+  }
+  function saveViajes(arr){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  }
+
+  function sum(arr){ return arr.reduce((a,b)=>a+(Number(b)||0),0); }
+
+  function toMoney(v){
+    if (v === null || v === undefined) return 0;
+    const s = String(v).replace(/[^0-9.]/g,"").trim();
+    if (!s) return 0;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+  }
+  function fmtMoney(n){
+    const x = Number(n)||0;
+    return x.toLocaleString("es-MX",{style:"currency",currency:"MXN"});
+  }
+  function toDateInput(d){
+    const y=d.getFullYear();
+    const m=String(d.getMonth()+1).padStart(2,"0");
+    const day=String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${day}`;
+  }
+  function toTimeInput(d){
+    const hh=String(d.getHours()).padStart(2,"0");
+    const mm=String(d.getMinutes()).padStart(2,"0");
+    return `${hh}:${mm}`;
+  }
+  function cryptoRandomId(){
+    if (crypto?.getRandomValues){
+      const a = new Uint32Array(2);
+      crypto.getRandomValues(a);
+      return a[0].toString(16)+a[1].toString(16);
+    }
+    return Math.random().toString(16).slice(2)+Date.now().toString(16);
+  }
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, s => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[s]));
+  }
+
+})();
+</script>
+</body>
+</html>
